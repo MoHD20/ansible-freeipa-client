@@ -57,6 +57,23 @@
     state: present
     name: "{{ item }}"
 
+
+# Check to see if CSF is already installed
+# TODO: this depends that CSF is in the users path
+- name: check if csf is installed
+  command: csf -v
+  register: result
+  ignore_errors: true
+  changed_when: false
+
+- name: Simple A record (IPV4 address) lookup for example.com
+  debug: msg="{{ lookup('dig', '{{ freeipa_server_ip }}')}}"
+  when: result|failed
+
+- name: allow FreeIPA server's ip
+  command: csf -a {{ freeipa_server_ip }}
+  when: result|failed
+
 - name: Check if host is enrolled
   tags:
     - enroll
